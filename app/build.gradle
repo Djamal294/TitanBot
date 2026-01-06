@@ -1,0 +1,14 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdk 31
+    namespace "com.titan.bot"
+
+    defaultConfig {
+        applicationId "com.titan.bot"
+        minSdk 21
+        targetSdk 31
+        versionCode 1
+        versionName "1.0"
+    }
+}
