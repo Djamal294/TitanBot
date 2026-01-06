@@ -1,36 +1,40 @@
-name: TitanBot Final Victory
+name: TitanBot Final Success
 on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Setup Environment
+      - name: 1. Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 2. Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 2. Construct Clean Project
-        # سنقوم ببناء المشروع من الصفر داخل السيرفر لضمان عدم التعارض
+      - name: 3. Full Project Reconstruction (إعادة بناء الهيكل)
         run: |
+          # تنظيف البيئة لضمان عدم التعارض (حل مشكلة الصورة 1000008327)
+          rm -rf app settings.gradle build.gradle gradle.properties
           mkdir -p app/src/main/java/com/titan/bot
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
 
-          # إنشاء ملف الواجهة XML
+          # إنشاء ملف الواجهة XML المتوافق مع findViewById في كودك
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
-              <TextView android:id="@+id/dashboardView" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:text="System Ready"/>
+              <TextView android:id="@+id/dashboardView" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:text="System Ready" android:textColor="#000000"/>
               <EditText android:id="@+id/linkInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Paste URL Here"/>
               <Button android:id="@+id/controlButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="START"/>
               <WebView android:id="@+id/myBrowser" android:layout_width="match_parent" android:layout_height="match_parent"/>
           </LinearLayout>
           EOF
 
-          # زرع كودك العملاق مع إصلاح كلمة bundle آلياً
+          # زرع كودك العملاق بالكامل (مع تصحيح فني لـ onCreate)
           cat <<'EOF' > app/src/main/java/com/titan/bot/MainActivity.java
           package com.titan.bot;
           import android.app.Activity;
@@ -67,8 +71,7 @@ jobs:
           }
           EOF
 
-      - name: 3. Inject Build Engine
-        run: |
+          # زرع إعدادات البناء المستقرة (حل مشكلة الصورة 1000008333)
           echo "include ':app'" > settings.gradle
           cat <<EOF > build.gradle
           buildscript {
@@ -83,7 +86,7 @@ jobs:
           android {
               namespace 'com.titan.bot'
               compileSdk 33
-              defaultConfig { applicationId "com.titan.bot"; minSdk 21; targetSdk 33 }
+              defaultConfig { applicationId "com.titan.bot"; minSdk 21; targetSdk 33; versionCode 1; versionName "1.0" }
           }
           dependencies {
               implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -93,6 +96,7 @@ jobs:
 
           cat <<EOF > app/src/main/AndroidManifest.xml
           <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.titan.bot">
+              <uses-permission android:name="android.permission.INTERNET" />
               <application android:label="TitanBot" android:theme="@style/Theme.AppCompat.Light">
                   <activity android:name=".MainActivity" android:exported="true">
                       <intent-filter>
@@ -104,11 +108,15 @@ jobs:
           </manifest>
           EOF
 
-      - name: 4. Build Final APK
-        run: gradle assembleDebug --no-daemon
+      - name: 4. Forced Stable Build
+        # استخدام نسخة Gradle 7.5.1 المستقرة بدلاً من 9.2.1
+        run: |
+          gradle wrapper --gradle-version 7.5.1
+          ./gradlew assembleDebug --no-daemon
 
-      - name: 5. Secure Upload
+      - name: 5. Secure Artifact Delivery
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: TitanBot-Final
+          name: TitanBot-Final-Release
           path: app/build/outputs/apk/debug/*.apk
