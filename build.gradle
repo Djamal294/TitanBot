@@ -4,6 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        // هذا الإصدار متناسق مع Java 17 و GitHub Actions v4
         classpath 'com.android.tools.build:gradle:7.4.2'
     }
 }
