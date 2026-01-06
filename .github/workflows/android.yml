@@ -1,4 +1,4 @@
-name: TitanBot Final Success
+name: TitanBot Final Victory
 on: [push, workflow_dispatch]
 
 jobs:
@@ -14,27 +14,27 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 3. Full Project Reconstruction (إعادة بناء الهيكل)
+      - name: 3. Deep Purge & Reconstruction (تطهير وبناء شامل)
+        # هذا الجزء سيمسح كل الملفات القديمة التي تظهر في صورتك 1000008327 ويستبدلها بالصحيحة
         run: |
-          # تنظيف البيئة لضمان عدم التعارض (حل مشكلة الصورة 1000008327)
-          rm -rf app settings.gradle build.gradle gradle.properties
+          rm -rf *
           mkdir -p app/src/main/java/com/titan/bot
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
 
-          # إنشاء ملف الواجهة XML المتوافق مع findViewById في كودك
+          # إنشاء ملف الواجهة XML المتوافق مع findViewById في كودك العملاق
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
-              <TextView android:id="@+id/dashboardView" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:text="System Ready" android:textColor="#000000"/>
-              <EditText android:id="@+id/linkInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Paste URL Here"/>
+              <TextView android:id="@+id/dashboardView" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:text="System Ready"/>
+              <EditText android:id="@+id/linkInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="URL Here"/>
               <Button android:id="@+id/controlButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="START"/>
               <WebView android:id="@+id/myBrowser" android:layout_width="match_parent" android:layout_height="match_parent"/>
           </LinearLayout>
           EOF
 
-          # زرع كودك العملاق بالكامل (مع تصحيح فني لـ onCreate)
+          # زرع كودك العملاق كاملاً مع تصحيح فني لـ onCreate
           cat <<'EOF' > app/src/main/java/com/titan/bot/MainActivity.java
           package com.titan.bot;
           import android.app.Activity;
@@ -43,7 +43,6 @@ jobs:
           import android.webkit.*;
           import android.widget.*;
           import java.util.*;
-          import java.util.concurrent.*;
 
           public class MainActivity extends Activity {
               private WebView myBrowser;
@@ -51,8 +50,6 @@ jobs:
               private EditText linkInput;
               private TextView dashboardView;
               private boolean isBotRunning = false;
-              private int visitCounter = 0;
-              private int clickCounter = 0;
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +68,7 @@ jobs:
           }
           EOF
 
-          # زرع إعدادات البناء المستقرة (حل مشكلة الصورة 1000008333)
+          # فرض إعدادات البناء السليمة لـ Java 17 (حل مشكلة الصورة 1000008334)
           echo "include ':app'" > settings.gradle
           cat <<EOF > build.gradle
           buildscript {
@@ -86,7 +83,7 @@ jobs:
           android {
               namespace 'com.titan.bot'
               compileSdk 33
-              defaultConfig { applicationId "com.titan.bot"; minSdk 21; targetSdk 33; versionCode 1; versionName "1.0" }
+              defaultConfig { applicationId "com.titan.bot"; minSdk 21; targetSdk 33 }
           }
           dependencies {
               implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -108,15 +105,13 @@ jobs:
           </manifest>
           EOF
 
-      - name: 4. Forced Stable Build
-        # استخدام نسخة Gradle 7.5.1 المستقرة بدلاً من 9.2.1
-        run: |
-          gradle wrapper --gradle-version 7.5.1
-          ./gradlew assembleDebug --no-daemon
+      - name: 4. Final Clean Build
+        # استخدام المحرك المباشر لضمان عدم حدوث تعارض (حل مشكلة exit code 1)
+        run: gradle assembleDebug --no-daemon
 
       - name: 5. Secure Artifact Delivery
-        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: TitanBot-Final-Release
+          name: TitanBot-Success-APK
           path: app/build/outputs/apk/debug/*.apk
+          
