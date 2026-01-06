@@ -1,4 +1,4 @@
-name: TitanBot AI-Power Build
+name: TitanBot Ultimate Recovery
 on: [push, workflow_dispatch]
 
 jobs:
@@ -14,18 +14,28 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 3. Intelligent Workspace Purge (تطهير البيئة)
-        # هذا الأمر يمسح كل شيء قد يسبب تعارضاً قبل البدء
+      - name: 3. Intelligent Workspace Repair
+        # هذا الجزء يزرع كافة الملفات المفقودة التي تسببت في فشل العملية 30
         run: |
-          rm -rf *
+          # تنظيف البيئة لضمان عدم التعارض
+          rm -rf app settings.gradle build.gradle
+          
+          # إنشاء الهيكل الأساسي للتطبيق
           mkdir -p app/src/main/res/values
-
-      - name: 4. AI Code Injection (زرع الأكواد المضمونة)
-        # هنا نضع مخزون الحلول الذي لا يخطئ
-        run: |
-          # إنشاء ملف الربط
+          
           echo "include ':app'" > settings.gradle
           
+          # إنشاء ملف المانيفست (قلب التطبيق)
+          cat <<EOF > app/src/main/AndroidManifest.xml
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.titan.bot">
+              <application android:label="TitanBot" android:allowBackup="true" android:supportsRtl="true" android:theme="@style/Theme.AppCompat.Light">
+              </application>
+          </manifest>
+          EOF
+
+          # إنشاء ملف الموارد
+          echo '<resources><string name="app_name">TitanBot</string></resources>' > app/src/main/res/values/strings.xml
+
           # إنشاء ملف المحرك الرئيسي
           cat <<EOF > build.gradle
           buildscript {
@@ -37,52 +47,7 @@ jobs:
           }
           EOF
 
-          # إنشاء ملف إعدادات التطبيق (حل مشاكل الصورة 1000008316)
-          cat <<EOF > app/build.gradle
-          plugins { id 'com.android.application' }
-          android {
-              namespace 'com.titan.bot'
-              compileSdk 33
-              defaultConfig {
-                  applicationId "com.titan.bot"
-                  minSdk 21
-                  targetSdk 33
-                  versionCode 1
-                  versionName "1.0"
-              }
-          }
-          dependencies {
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'com.google.android.material:material:1.9.0'
-          }
-          EOF
-
-          # إنشاء ملف الموارد الأساسي لمنع فشل التجميع
-          echo '<resources><string name="app_name">TitanBot</string></resources>' > app/src/main/res/values/strings.xml
-          
-          # إنشاء ملف المانيفست الأساسي
-          cat <<EOF > app/src/main/AndroidManifest.xml
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.titan.bot">
-              <application android:label="TitanBot" android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-              </application>
-          </manifest>
-          EOF
-
-      - name: 5. Final APK Construction (البناء النهائي)
-        # استخدام المحرك المباشر مع تجاهل الأخطاء السابقة تماماً
-        run: gradle assembleDebug --no-daemon --stacktrace
-          
-      - name: 6. Delivery
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: TitanBot-Master-Build
-          path: app/build/outputs/apk/debug/*.apk
-          }
-          EOF
-
-          # رابعاً: فحص وإصلاح مجلد التطبيق (app)
-          mkdir -p app/src/main
+          # إنشاء إعدادات التطبيق الصحيحة (بدون أخطاء إملائية)
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
           android {
@@ -103,13 +68,13 @@ jobs:
           EOF
 
       - name: 4. Final APK Construction
-        # محرك بناء يتجاهل التحذيرات غير المؤثرة ويركز على إنتاج الـ APK
-        run: gradle assembleDebug --no-daemon --stacktrace -Dorg.gradle.warning.mode=none
+        # استخدام أمر بناء يتجاهل التعارضات السابقة
+        run: gradle assembleDebug --no-daemon --stacktrace
           
-      - name: 5. Secure Delivery
+      - name: 5. Direct Delivery
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: TitanBot-Ultimate-APK
+          name: TitanBot-Final-APK
           path: app/build/outputs/apk/debug/*.apk
           
