@@ -14,11 +14,15 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Build with Gradle
-        # هذا الأمر يقوم ببناء التطبيق حتى لو كانت ملفات Wrapper ناقصة
-        run: |
-          gradle assembleDebug --stacktrace
-          
+      # هذه الخطوة ستقوم بإنشاء ملفات التشغيل الناقصة فوراً
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 7.4.2
+
+      - name: Build APK
+        run: gradle assembleDebug --stacktrace
+
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
