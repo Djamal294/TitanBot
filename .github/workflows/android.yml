@@ -14,17 +14,13 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # هذه الخطوة ستقوم بإنشاء ملفات التشغيل الناقصة فوراً
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 7.4.2
-
-      - name: Build APK
-        run: gradle assembleDebug --stacktrace
-
+      - name: Build APK Directly
+        # هذا الأمر سيقوم بتثبيت Gradle وبناء التطبيق فوراً
+        run: |
+          gradle assembleDebug --stacktrace
+          
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: TitanBot-Final-APK
+          name: TitanBot-Final-Edition
           path: app/build/outputs/apk/debug/app-debug.apk
