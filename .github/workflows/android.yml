@@ -4,20 +4,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Set up JDK 17
+      - uses: actions/checkout@v4
+      - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-      - name: Build APK
-        run: gradle assembleDebug --stacktrace
+      - name: Build with Gradle
+        # هذا الأمر سيقوم بإنشاء الملفات الناقصة وبناء التطبيق
+        run: gradle assembleDebug --no-daemon
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: TitanBot-App
+          name: TitanBot-Final
           path: app/build/outputs/apk/debug/*.apk
           
