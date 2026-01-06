@@ -1,60 +1,51 @@
-name: TitanBot Final Fix
+name: TitanBot Final Victory
 on: [push, workflow_dispatch]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: 1. Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { java-version: '17', distribution: 'temurin' }
 
-      - name: 2. Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: 3. Radical Cleanup (حل مشكلة التصادم)
-        # هذا الأمر يمسح الملفات المتعارضة التي تظهر في صورتك 1000008327
+      - name: 🛠️ Repair & Inject Logic
+        # هذا الجزء يربط ملف الجافا العملاق الخاص بك بالواجهة آلياً
         run: |
-          rm -rf app build.gradle settings.gradle gradle.properties
-          mkdir -p app/src/main/java/com/titan/bot
-          mkdir -p app/src/main/res/layout
-          mkdir -p app/src/main/res/values
-
-      - name: 4. Build Professional Structure
-        run: |
-          # إعادة بناء الملفات بتنسيق يتوافق مع Java 17 ويمنع خطأ exit code 1
-          echo "include ':app'" > settings.gradle
+          mkdir -p app/src/main/java/com/titan/bot app/src/main/res/layout app/src/main/res/values
           
+          # نقل ملف الجافا الخاص بك لمكانه الصحيح لضمان قراءته
+          cp *.java app/src/main/java/com/titan/bot/MainActivity.java || echo "Using existing java"
+          
+          # إنشاء الواجهة XML لتعمل معfindViewById في كودك
+          cat <<EOF > app/src/main/res/layout/activity_main.xml
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+              <TextView android:id="@+id/dashboardView" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="System Ready"/>
+              <EditText android:id="@+id/linkInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="URL"/>
+              <Button android:id="@+id/controlButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="START"/>
+              <WebView android:id="@+id/myBrowser" android:layout_width="match_parent" android:layout_height="match_parent"/>
+          </LinearLayout>
+          EOF
+
+      - name: 🚀 Force Build APK
+        run: |
+          echo "include ':app'" > settings.gradle
           cat <<EOF > build.gradle
-          buildscript {
-              repositories { google(); mavenCentral() }
-              dependencies { classpath 'com.android.tools.build:gradle:7.4.2' }
-          }
+          buildscript { repositories { google(); mavenCentral() }; dependencies { classpath 'com.android.tools.build:gradle:7.4.2' } }
           allprojects { repositories { google(); mavenCentral() } }
           EOF
-
-          # زرع كود الجافا الخاص بك وتعديل كلمة bundle إلى onCreate (ضروري تقنياً)
-          cat <<'EOF' > app/src/main/java/com/titan/bot/MainActivity.java
-          package com.titan.bot;
-          import android.app.Activity;
-          import android.os.Bundle;
-          import android.webkit.WebView;
-          import android.widget.Button;
-
-          public class MainActivity extends Activity {
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  setContentView(R.layout.activity_main);
-              }
-          }
+          cat <<EOF > app/build.gradle
+          plugins { id 'com.android.application' }; android { namespace 'com.titan.bot'; compileSdk 33; defaultConfig { applicationId "com.titan.bot"; minSdk 21; targetSdk 33 } }
+          dependencies { implementation 'androidx.appcompat:appcompat:1.6.1'; implementation 'com.google.android.material:material:1.9.0' }
           EOF
+          cat <<EOF > app/src/main/AndroidManifest.xml
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.titan.bot">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application android:label="TitanBot"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application>
+          </manifest>
+          EOF
+          gradle assembleDebug --no-daemon
 
-      - name: 5. Build with Stable Engine
-        # هنا نجبر النظام على تجاهل Gradle 9.2.1 الفاشل واستخدام المحرك المستقر
-        run: |
-          gradle wrapper --gradle-version 7.5.1
-          ./gradlew assembleDebug --no-daemon
-          
+      - name: 📦 Deliver APK
+        uses: actions/upload-artifact@v4
+        with: { name: TitanBot-Final, path: app/build/outputs/apk/debug/*.apk }
+        
