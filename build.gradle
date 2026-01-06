@@ -1,20 +1,16 @@
-apply plugin: 'com.android.application'
-
-android {
-    namespace 'com.titan.bot'
-    compileSdk 33
-
-    defaultConfig {
-        applicationId "com.titan.bot"
-        minSdk 21
-        targetSdk 33
-        versionCode 1
-        versionName "1.0"
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
     }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.4.2'
+    }
+}
 
-    buildTypes {
-        release {
-            minifyEnabled false
-        }
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
     }
 }
