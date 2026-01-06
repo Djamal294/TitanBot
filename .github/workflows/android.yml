@@ -6,21 +6,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # تحديث لـ v4
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4 # تحديث لـ v4
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3 # تحديث للأداة الرسمية
+
       - name: Build APK Directly
-        # هذا الأمر سيقوم بتثبيت Gradle وبناء التطبيق فوراً
-        run: |
-          gradle assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
           
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # هذا هو الحل للخطأ الظاهر في صورتك
         with:
-          name: TitanBot-Final-Edition
+          name: TitanBot-Final-App
           path: app/build/outputs/apk/debug/app-debug.apk
+          
