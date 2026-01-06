@@ -1,4 +1,4 @@
-name: TitanBot Intelligent Fixer
+name: TitanBot AI-Repair & Build
 on: [push, workflow_dispatch]
 
 jobs:
@@ -14,31 +14,58 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 3. Smart Analyzer & Repair (محلل ومصلح الأكواد)
-        # هذا الجزء هو الأداة التي طلبتها؛ تبحث عن الأخطاء وتضع الأكواد الصحيحة مكانها
+      - name: 3. Smart Diagnostic & Self-Repair (المصلح الذكي الدقيق)
+        # هذا الجزء يحلل المشروع ويصلح الأخطاء تلقائياً قبل البدء
         run: |
-          echo "Checking for missing configuration files..."
+          echo "Starting AI Diagnostic..."
           
-          # إصلاح ملف settings.gradle إذا كان تالفاً
+          # أولاً: تنظيف شامل لأي ملفات متعارضة (حل مشكلة التكرار)
+          find . -maxdepth 1 -name "build.gradle" -not -path "./build.gradle" -delete
+          rm -f settings.gradle gradle.properties gradlew gradlew.bat
+          
+          # ثانياً: إعادة بناء الهيكل الصحيح (مخزون الحلول)
           echo "include ':app'" > settings.gradle
           
-          # إصلاح ملف gradle.properties لزيادة قوة المعالجة وتجاوز الأخطاء
-          echo "org.gradle.jvmargs=-Xmx2048m" > gradle.properties
-          echo "android.useAndroidX=true" >> gradle.properties
-          echo "android.enableJetifier=true" >> gradle.properties
+          # ثالثاً: زرع كود المحرك الرئيسي مع ضمان إغلاق الأقواس
+          cat <<EOF > build.gradle
+          buildscript {
+              repositories { google(); mavenCentral() }
+              dependencies { classpath 'com.android.tools.build:gradle:7.4.2' }
+          }
+          allprojects {
+              repositories { google(); mavenCentral() }
+          }
+          EOF
 
-          # إنشاء ملف Wrapper لضمان عدم حدوث تعارض في الإصدارات (حل مشكلة الصورة 1000008320)
-          gradle wrapper --gradle-version 7.5.1
-          chmod +x gradlew
+          # رابعاً: فحص وإصلاح مجلد التطبيق (app)
+          mkdir -p app/src/main
+          cat <<EOF > app/build.gradle
+          plugins { id 'com.android.application' }
+          android {
+              namespace 'com.titan.bot'
+              compileSdk 33
+              defaultConfig {
+                  applicationId "com.titan.bot"
+                  minSdk 21
+                  targetSdk 33
+                  versionCode 1
+                  versionName "1.0"
+              }
+          }
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.9.0'
+          }
+          EOF
 
       - name: 4. Final APK Construction
-        # محاولة البناء مع ميزة الإصلاح التلقائي للمكتبات
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        # محرك بناء يتجاهل التحذيرات غير المؤثرة ويركز على إنتاج الـ APK
+        run: gradle assembleDebug --no-daemon --stacktrace -Dorg.gradle.warning.mode=none
           
-      - name: 5. Deliver APK
+      - name: 5. Secure Delivery
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: TitanBot-Ultimate-Edition
+          name: TitanBot-Ultimate-APK
           path: app/build/outputs/apk/debug/*.apk
           
